@@ -61,7 +61,7 @@ type_color_dict = {
 st.title("Pokedex!")
 
 pokemon_number = st.number_input('Enter a pokemon number:', min_value=1, 
-                                  max_value=1008, value=1, step=1)
+                                  max_value=1008, value=135, step=1)
 
 name, height, weight, num_moves, types, official_art, cries, learnable_moves, sprites = get_details(pokemon_number)
 
