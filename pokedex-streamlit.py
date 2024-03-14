@@ -23,9 +23,19 @@ def render_types(column, types):
   subcolumns = column.columns(len(types))
   i = 0
   for type in types:
-    subcolumns[i].markdown(f'<div style="width:100%; display: grid; align-items: center; justify-items: center"> <p style="background-color:{type_color_dict.get(type)}; color:{"white" if type_color_dict.get(type) in ["darkgray", "darkpurple", "darkblue", "purple", "blue", "green", "gray"] else "black"}; font-size: 18px; font-weight: bold; width: fit-content; padding: 0.5em; border-radius: 15px; margin: 0.25em;">{type.title()}</p> </div>', unsafe_allow_html=True)
+    subcolumns[i].markdown(f'<div style="width:100%; display: grid; align-items: center; justify-items: center"> <p style="background-color:{type_color_dict.get(type)}; color:{"white" if type_color_dict.get(type) in ["darkgray", "darkpurple", "darkblue", "purple", "blue", "green", "gray"] else "black"}; font-size: 18px; font-weight: bold; width: fit-content; padding: 0.25em 0.5em; border-radius: 15px; margin: 0.25em;">{type.title()}</p> </div>', unsafe_allow_html=True)
     i+=1
     
+@st.cache_data
+def fetch_learnable_moves(move_df):
+  start_index = st.session_state.num_of_moves
+  end_index = min(st.session_state.num_of_moves+15, len(learnable_moves))
+  for move in learnable_moves[start_index:end_index]:
+      move_details = requests.get(move['move']['url']).json()
+      move_df.loc[move_details['id']] = [move['move']['name'], move_details['type']['name'], move_details['power'], move_details['accuracy'], move_details['pp'], move_details['damage_class']['name']]
+  st.session_state.num_of_moves = end_index
+  return move_df
+
 type_color_dict = {
     'normal': 'gray', 
     'fire': 'orange', 
@@ -97,8 +107,17 @@ with st.expander('Sprites'):
   bigspritecol2.image(sprites[generation][version][locator1+locator2], use_column_width=True)
 
 with st.expander('Learnable Moves'):
-  move_df = pd.DataFrame({'Move': [move['move']['name'].replace("-", " ").title() for move in learnable_moves], 'URL': [move['move']['url'] for move in learnable_moves]}).set_index('URL')
-  st.table(move_df)
+  if 'move_df' not in st.session_state or st.session_state['current_pokemon_number'] != pokemon_number:
+      st.session_state['move_df'] = pd.DataFrame(columns=["ID", "Move", "Type", "Power", "Accuracy", "PP", "Class"]).set_index('ID')
+      st.session_state['current_pokemon_number'] = pokemon_number
+      st.session_state['num_of_moves'] = 0
+      st.cache_data.clear()
+  move_df = st.session_state['move_df']
+  load_more = st.button('Load More Moves', disabled=st.session_state.num_of_moves == len(learnable_moves))
+  if load_more:
+    st.session_state['move_df'] = fetch_learnable_moves(st.session_state['move_df'])
+  st.table(st.session_state['move_df'])
+  st.caption(f"{st.session_state.num_of_moves}/{len(learnable_moves)}")
 
 comparisoncol1, comparisoncol2 = st.columns(2)
 
