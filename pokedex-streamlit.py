@@ -92,11 +92,11 @@ with st.expander('Sprites'):
   generation = bigspritecol1.selectbox('Generation', list(sprites.keys()))
   version = bigspritecol1.selectbox('Version', list(sprites[generation].keys()))
   spritecol1, spritecol2 = bigspritecol1.columns(2)
-  back = spritecol1.toggle('Back Sprite', disabled=generation in ['generation-vi', 'generation-vii', 'generation-viii'])
-  shiny = spritecol2.toggle('Shiny', disabled=generation == 'generation-i' or version == 'icons')
-  if generation in ['generation-vi', 'generation-vii', 'generation-viii']:
+  back = spritecol1.toggle('Back Sprite', disabled=sprites[generation][version].get('back_default') == None)
+  shiny = spritecol2.toggle('Shiny', disabled=sprites[generation][version].get('front_shiny') == None)
+  if sprites[generation][version].get('back_default') == None:
     back = False
-  if generation == 'generation-i' or version == 'icons':
+  if sprites[generation][version].get('front_shiny') == None:
     shiny = False
   locator1 = 'front_'
   if back:
