@@ -32,7 +32,7 @@ def fetch_learnable_moves(move_df):
   end_index = min(st.session_state.num_of_moves+15, len(learnable_moves))
   for move in learnable_moves[start_index:end_index]:
       move_details = requests.get(move['move']['url']).json()
-      move_df.loc[move_details['id']] = [move['move']['name'], move_details['type']['name'], move_details['power'], move_details['accuracy'], move_details['pp'], move_details['damage_class']['name']]
+      move_df.loc[move_details['id']] = [move['move']['name'].replace("-", " ").title(), move_details['type']['name'].title(), move_details['power'], move_details['accuracy'], move_details['pp'], move_details['damage_class']['name'].title()]
   st.session_state.num_of_moves = end_index
   return move_df
 
