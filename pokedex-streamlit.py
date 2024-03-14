@@ -48,7 +48,7 @@ type_color_dict = {
     'fairy': 'pink',
     'grass': 'lightgreen',
     'fighting': 'red',
-    'psychic': 'lightpurple',
+    'psychic': 'purple',
     'rock': 'darkgray',
     'steel': 'darkgray',
     'ice': 'lightblue',
@@ -89,22 +89,33 @@ col2.audio(cries.get(cry_choice), format='audio/wav')
 
 with st.expander('Sprites'):
   bigspritecol1, bigspritecol2 = st.columns(2)
-  generation = bigspritecol1.selectbox('Generation', list(sprites.keys()))
-  version = bigspritecol1.selectbox('Version', list(sprites[generation].keys()))
-  spritecol1, spritecol2 = bigspritecol1.columns(2)
-  back = spritecol1.toggle('Back Sprite', disabled=sprites[generation][version].get('back_default') == None)
-  shiny = spritecol2.toggle('Shiny', disabled=sprites[generation][version].get('front_shiny') == None)
-  if sprites[generation][version].get('back_default') == None:
-    back = False
-  if sprites[generation][version].get('front_shiny') == None:
-    shiny = False
-  locator1 = 'front_'
-  if back:
-    locator1 = 'back_'
-  locator2 = 'default'
-  if shiny:
-    locator2 = 'shiny'
-  bigspritecol2.image(sprites[generation][version][locator1+locator2], use_column_width=True)
+  ##remove all generations that are completely null from sprites
+  del sprites['generation-v']['black-white']['animated']
+  for generation in list(sprites.keys()):
+    for version in list(sprites[generation].keys()):
+      if all([sprites[generation][version][sprite] == None for sprite in sprites[generation][version].keys()]):
+        del sprites[generation][version]
+    if len(sprites[generation]) == 0:
+      del sprites[generation]
+  if len(sprites) == 0:
+    st.write('No sprites available for this pokemon')
+  else:
+    generation = bigspritecol1.selectbox('Generation', list(sprites.keys()))
+    version = bigspritecol1.selectbox('Version', list(sprites[generation].keys()))
+    spritecol1, spritecol2 = bigspritecol1.columns(2)
+    back = spritecol1.toggle('Back Sprite', disabled=sprites[generation][version].get('back_default') == None)
+    shiny = spritecol2.toggle('Shiny', disabled=sprites[generation][version].get('front_shiny') == None)
+    if sprites[generation][version].get('back_default') == None:
+      back = False
+    if sprites[generation][version].get('front_shiny') == None:
+      shiny = False
+    locator1 = 'front_'
+    if back:
+      locator1 = 'back_'
+    locator2 = 'default'
+    if shiny:
+      locator2 = 'shiny'
+    bigspritecol2.image(sprites[generation][version][locator1+locator2], use_column_width=True)
 
 with st.expander('Learnable Moves'):
   if 'move_df' not in st.session_state or st.session_state['current_pokemon_number'] != pokemon_number:
